@@ -546,6 +546,15 @@
     <button class="tab-btn" onclick="switchTab('calendar')">📅 カレンダー</button>
   </div>
 
+  <!-- ===== エクスポート/インポートバー ===== -->
+  <div style="display:flex; gap:8px; margin:12px 14px 0;">
+    <button class="btn btn-blue" style="flex:1; font-size:12px" onclick="exportData()">📤 エクスポート</button>
+    <label class="btn btn-pink" style="flex:1; font-size:12px; text-align:center; cursor:pointer; margin:0; display:flex; align-items:center; justify-content:center;">
+      📥 インポート
+      <input type="file" accept=".json" onchange="importData(event)" style="display:none">
+    </label>
+  </div>
+
   <!-- ===== 未完了タブ ===== -->
   <div class="tab-content active" id="tab-todo">
     <div class="input-area">
@@ -1054,6 +1063,49 @@ document.getElementById('daily-input').addEventListener('keydown', e => { if (e.
 document.getElementById('memo-input').addEventListener('keydown', e => {
   if (e.key === 'Enter' && e.ctrlKey) addMemo();
 });
+
+// ============ Export / Import ============
+function exportData() {
+  const data = { tasks, memos, dailyTasks, dailyHistory };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const now = new Date();
+  const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  a.href = url;
+  a.download = `todo_backup_${stamp}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📤 エクスポートしたよ！');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      // 最低限のバリデーション
+      if (typeof data !== 'object' || data === null) throw new Error();
+      showConfirm('今のデータに上書きしてインポートするよ。\nよろしい？', () => {
+        tasks        = Array.isArray(data.tasks)       ? data.tasks       : tasks;
+        memos        = Array.isArray(data.memos)       ? data.memos       : memos;
+        dailyTasks   = Array.isArray(data.dailyTasks)  ? data.dailyTasks  : dailyTasks;
+        dailyHistory = typeof data.dailyHistory === 'object' ? data.dailyHistory : dailyHistory;
+        save();
+        // 現在のタブを再描画
+        switchTab(currentTab);
+        showToast('📥 インポート完了！');
+      });
+    } catch {
+      showToast('⚠️ ファイルが読み込めなかった…');
+    }
+    // 同じファイルを再選択できるようにリセット
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
 
 // ============ Init ============
 load();
