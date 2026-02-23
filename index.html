@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>✨ My To Do List</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-main: #F0E6FA;
+    --bg-frame: #FFFFFF;
+    --accent-pink: #FFB6C1;
+    --accent-pink-dark: #FF9BB3;
+    --accent-blue: #ADD8E6;
+    --accent-blue-dark: #8FC8E8;
+    --accent-green: #B4E7CE;
+    --accent-green-dark: #92D4B8;
+    --text-dark: #5A5A5A;
+    --text-light: #B0B0B0;
+    --shadow: 0 4px 15px rgba(173,135,255,0.12);
+    --shadow-hover: 0 6px 20px rgba(173,135,255,0.22);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Zen Maru Gothic', 'M PLUS Rounded 1c', sans-serif;
+    background: var(--bg-main);
+    min-height: 100vh;
+    color: var(--text-dark);
+    /* subtle dot pattern background */
+    background-image: radial-gradient(circle, rgba(173,135,255,0.08) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .app-container {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 0 0 80px 0;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .app-header {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 18px 20px 14px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,182,193,0.3);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .app-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: 0.03em;
+  }
+
+  /* Tab Nav */
+  .tab-nav {
+    display: flex;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(173,216,230,0.3);
+    overflow-x: auto;
+    scrollbar-width: none;
+    position: sticky;
+    top: 63px;
+    z-index: 99;
+  }
+  .tab-nav::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 12px 8px;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-light);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    color: var(--text-dark);
+    border-bottom-color: var(--accent-pink);
+    background: rgba(255,182,193,0.08);
+  }
+
+  /* Tab Content */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Input Area */
+  .input-area {
+    background: white;
+    margin: 14px 14px 0;
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: var(--shadow);
+  }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .task-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 2px solid var(--accent-blue);
+    border-radius: 50px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text-dark);
+    background: #fafcff;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .task-input:focus { border-color: var(--accent-pink); }
+
+  .btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 50px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.95); }
+
+  .btn-pink { background: var(--accent-pink); color: white; }
+  .btn-pink:hover { background: var(--accent-pink-dark); }
+  .btn-blue { background: var(--accent-blue); color: white; }
+  .btn-blue:hover { background: var(--accent-blue-dark); }
+  .btn-green { background: var(--accent-green); color: white; }
+  .btn-green:hover { background: var(--accent-green-dark); }
+  .btn-gray { background: var(--text-light); color: white; }
+
+  /* Section Title */
+  .section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 16px 14px 8px;
+  }
+
+  /* Task Item */
+  .task-item {
+    background: white;
+    margin: 6px 14px;
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: var(--shadow);
+    border-left: 3px solid var(--accent-blue);
+    transition: all 0.25s;
+    animation: slideIn 0.2s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .task-item.completed {
+    border-left-color: var(--text-light);
+    opacity: 0.75;
+  }
+
+  .task-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-all;
+  }
+
+  .task-item.completed .task-text {
+    text-decoration: line-through;
+    color: var(--text-light);
+  }
+
+  .task-meta {
+    font-size: 10px;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+
+  .task-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .icon-btn:active { transform: scale(0.9); }
+  .icon-btn-green { background: var(--accent-green); color: white; }
+  .icon-btn-blue { background: var(--accent-blue); color: white; }
+  .icon-btn-gray { background: #eee; color: var(--text-light); }
+  .icon-btn-pink { background: var(--accent-pink); color: white; }
+
+  /* Edit mode controls */
+  .edit-controls {
+    margin: 0 14px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 10px 0 4px;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-light);
+    font-size: 14px;
+  }
+  .empty-state-icon { font-size: 40px; margin-bottom: 10px; }
+
+  /* Memo Tab */
+  .memo-input-area {
+    background: white;
+    margin: 14px 14px 0;
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: var(--shadow);
+  }
+
+  .memo-label {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .memo-textarea {
+    width: 100%;
+    height: 90px;
+    padding: 10px 12px;
+    border: 2px solid var(--accent-blue);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text-dark);
+    resize: none;
+    outline: none;
+    background: #fafcff;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+  .memo-textarea:focus { border-color: var(--accent-pink); }
+
+  .memo-item {
+    background: white;
+    margin: 6px 14px;
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    box-shadow: var(--shadow);
+    border-left: 3px solid var(--accent-pink);
+    animation: slideIn 0.2s ease;
+  }
+
+  .memo-date {
+    font-size: 10px;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+
+  .memo-body {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .memo-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.6;
+    word-break: break-all;
+    white-space: pre-wrap;
+  }
+
+  /* Daily ToDo Tab */
+  .daily-controls {
+    display: flex;
+    gap: 8px;
+    margin: 14px 14px 0;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .daily-separator {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--accent-blue), transparent);
+    margin: 10px 14px;
+  }
+
+  /* Calendar Tab */
+  .calendar-container {
+    margin: 14px;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .cal-header {
+    background: var(--accent-blue);
+    color: white;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cal-title {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .cal-nav-btn {
+    background: rgba(255,255,255,0.3);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .cal-nav-btn:hover { background: rgba(255,255,255,0.5); }
+
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: rgba(173,216,230,0.15);
+    border-bottom: 1px solid rgba(173,216,230,0.3);
+  }
+
+  .cal-weekday {
+    text-align: center;
+    padding: 8px 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-light);
+  }
+  .cal-weekday:first-child { color: #ff8fa3; }
+  .cal-weekday:last-child { color: var(--accent-blue-dark); }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+    padding: 6px;
+  }
+
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    color: var(--text-dark);
+  }
+  .cal-day:hover { background: rgba(173,216,230,0.3); }
+  .cal-day.today {
+    background: var(--accent-blue);
+    color: white;
+    font-weight: 700;
+  }
+  .cal-day.has-tasks {
+    background: var(--accent-pink);
+    color: white;
+    font-weight: 700;
+  }
+  .cal-day.has-tasks.today {
+    background: #ff7a9a;
+  }
+  .cal-day.selected {
+    box-shadow: 0 0 0 2px var(--accent-pink);
+  }
+  .cal-day.other-month { color: var(--text-light); opacity: 0.4; }
+  .cal-day.sunday { color: #ff8fa3; }
+  .cal-day.saturday { color: var(--accent-blue-dark); }
+  .cal-day.has-tasks.sunday, .cal-day.has-tasks.saturday { color: white; }
+
+  .cal-detail {
+    padding: 14px 16px;
+    border-top: 1px solid rgba(173,216,230,0.2);
+    min-height: 60px;
+  }
+
+  .cal-detail-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+  }
+
+  .cal-task-item {
+    font-size: 13px;
+    color: var(--text-dark);
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .cal-task-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    flex-shrink: 0;
+  }
+
+  /* Toast notification */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(90,90,90,0.9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Bottom padding for fixed nav */
+  .bottom-spacer { height: 20px; }
+
+  /* Legend */
+  .cal-legend {
+    display: flex;
+    gap: 14px;
+    padding: 10px 16px;
+    font-size: 11px;
+    color: var(--text-light);
+    border-top: 1px solid rgba(173,216,230,0.2);
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+
+  /* Scrollable sections */
+  .scroll-section {
+    overflow-y: auto;
+  }
+
+  /* Reset confirm style */
+  .confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(90,90,90,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    animation: fadeIn 0.15s;
+  }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+  .confirm-box {
+    background: white;
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    width: 280px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  }
+  .confirm-box p {
+    font-size: 15px;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .confirm-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="app-header">
+    <div class="app-title">✨ My To Do List ✨</div>
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('todo')">📋 未完了</button>
+    <button class="tab-btn" onclick="switchTab('done')">✅ 完了済み</button>
+    <button class="tab-btn" onclick="switchTab('daily')">🔄 毎日ToDo</button>
+    <button class="tab-btn" onclick="switchTab('memo')">📝 メモ帳</button>
+    <button class="tab-btn" onclick="switchTab('calendar')">📅 カレンダー</button>
+  </div>
+
+  <!-- ===== 未完了タブ ===== -->
+  <div class="tab-content active" id="tab-todo">
+    <div class="input-area">
+      <div class="input-row">
+        <input class="task-input" id="task-input" type="text" placeholder="タスクを入力..." maxlength="100">
+        <button class="btn btn-pink" onclick="addTask()">追加 ➕</button>
+      </div>
+    </div>
+    <div class="edit-controls">
+      <button class="btn btn-blue" id="edit-btn" onclick="toggleEdit()">編集 ✏️</button>
+    </div>
+    <div id="active-list"></div>
+    <div class="bottom-spacer"></div>
+  </div>
+
+  <!-- ===== 完了済みタブ ===== -->
+  <div class="tab-content" id="tab-done">
+    <div class="section-title">✅ 完了済みタスク</div>
+    <div id="done-list"></div>
+    <div class="bottom-spacer"></div>
+  </div>
+
+  <!-- ===== 毎日ToDoタブ ===== -->
+  <div class="tab-content" id="tab-daily">
+    <div class="input-area">
+      <div class="input-row">
+        <input class="task-input" id="daily-input" type="text" placeholder="毎日やること..." maxlength="100">
+        <button class="btn btn-pink" onclick="addDailyTask()">追加 ➕</button>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="btn btn-green" style="flex:1" onclick="resetDaily()">🔄 リセット</button>
+      </div>
+    </div>
+    <div class="section-title">📌 今日のタスク</div>
+    <div id="daily-active-list"></div>
+    <div class="daily-separator"></div>
+    <div class="section-title" id="daily-done-title" style="display:none">✓ 完了済み</div>
+    <div id="daily-done-list"></div>
+    <div class="bottom-spacer"></div>
+  </div>
+
+  <!-- ===== メモ帳タブ ===== -->
+  <div class="tab-content" id="tab-memo">
+    <div class="memo-input-area">
+      <div class="memo-label">💭 思いついたことを書き留めよう</div>
+      <textarea class="memo-textarea" id="memo-input" placeholder="メモを入力..."></textarea>
+      <button class="btn btn-pink" style="margin-top:10px; width:100%" onclick="addMemo()">記録 ✏️</button>
+    </div>
+    <div id="memo-list"></div>
+    <div class="bottom-spacer"></div>
+  </div>
+
+  <!-- ===== カレンダータブ ===== -->
+  <div class="tab-content" id="tab-calendar">
+    <div class="calendar-container">
+      <div class="cal-header">
+        <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+        <div class="cal-title" id="cal-title"></div>
+        <button class="cal-nav-btn" onclick="calNext()">›</button>
+      </div>
+      <div class="cal-weekdays">
+        <div class="cal-weekday">日</div>
+        <div class="cal-weekday">月</div>
+        <div class="cal-weekday">火</div>
+        <div class="cal-weekday">水</div>
+        <div class="cal-weekday">木</div>
+        <div class="cal-weekday">金</div>
+        <div class="cal-weekday">土</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-blue)"></div>今日</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent-pink)"></div>完了記録あり</div>
+      </div>
+      <div class="cal-detail" id="cal-detail">
+        <div style="color:var(--text-light); font-size:13px">📌 日付をタップすると完了タスクを確認できます</div>
+      </div>
+    </div>
+    <div class="bottom-spacer"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ Data ============
+let tasks = [];
+let memos = [];
+let dailyTasks = [];
+let dailyHistory = {}; // {"2026-02-21": ["タスク名", ...]}
+let editMode = false;
+
+// ============ Storage ============
+function save() {
+  try {
+    localStorage.setItem('todo_app_data', JSON.stringify({
+      tasks, memos, dailyTasks, dailyHistory
+    }));
+  } catch(e) { console.warn('Save failed', e); }
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem('todo_app_data');
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    tasks = d.tasks || [];
+    memos = d.memos || [];
+    dailyTasks = d.dailyTasks || [];
+    dailyHistory = d.dailyHistory || {};
+  } catch(e) {
+    tasks = []; memos = []; dailyTasks = []; dailyHistory = {};
+  }
+}
+
+// ============ Tab ============
+let currentTab = 'todo';
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  const tabs = ['todo','done','daily','memo','calendar'];
+  document.querySelectorAll('.tab-btn')[tabs.indexOf(tab)].classList.add('active');
+  currentTab = tab;
+  if (tab === 'todo') renderActive();
+  if (tab === 'done') renderDone();
+  if (tab === 'daily') renderDaily();
+  if (tab === 'memo') renderMemos();
+  if (tab === 'calendar') renderCalendar();
+}
+
+// ============ Toast ============
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ============ Tasks ============
+function addTask() {
+  const inp = document.getElementById('task-input');
+  const text = inp.value.trim();
+  if (!text) { showToast('⚠️ タスクを入力してね'); return; }
+  tasks.push({ text, completed: false, completedDate: null });
+  inp.value = '';
+  save();
+  renderActive();
+  showToast('✅ 追加したよ！');
+}
+
+function completeTask(idx) {
+  const today = formatDateJP(new Date());
+  tasks[idx].completed = true;
+  tasks[idx].completedDate = today;
+  save();
+  renderActive();
+  renderDone();
+  showToast('🎉 完了！');
+}
+
+function uncompleteTask(idx) {
+  tasks[idx].completed = false;
+  tasks[idx].completedDate = null;
+  save();
+  renderActive();
+  renderDone();
+}
+
+function deleteTask(idx) {
+  tasks.splice(idx, 1);
+  save();
+  renderActive();
+  renderDone();
+  showToast('🗑 削除したよ');
+}
+
+function moveTask(activeIdx, dir) {
+  const activeIndices = tasks.map((t,i) => t.completed ? -1 : i).filter(i => i >= 0);
+  const realIdx = activeIndices[activeIdx];
+  const swapIdx = activeIndices[activeIdx + dir];
+  if (swapIdx === undefined) return;
+  [tasks[realIdx], tasks[swapIdx]] = [tasks[swapIdx], tasks[realIdx]];
+  save();
+  renderActive();
+}
+
+function toggleEdit() {
+  editMode = !editMode;
+  const btn = document.getElementById('edit-btn');
+  if (editMode) {
+    btn.textContent = '完了 ✓';
+    btn.className = 'btn btn-green';
+  } else {
+    btn.textContent = '編集 ✏️';
+    btn.className = 'btn btn-blue';
+  }
+  renderActive();
+}
+
+function renderActive() {
+  const list = document.getElementById('active-list');
+  const active = tasks.filter(t => !t.completed);
+  if (!active.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🌸</div>タスクがないよ！<br>新しいタスクを追加してみて</div>';
+    return;
+  }
+  list.innerHTML = active.map((task, i) => {
+    const realIdx = tasks.indexOf(task);
+    const moveButtons = editMode ? `
+      <button class="icon-btn icon-btn-blue" onclick="moveTask(${i}, -1)" title="上へ">▲</button>
+      <button class="icon-btn icon-btn-blue" onclick="moveTask(${i}, 1)" title="下へ">▼</button>
+    ` : '';
+    return `<div class="task-item" id="task-${realIdx}">
+      <div class="task-text">${escHtml(task.text)}</div>
+      <div class="task-actions">
+        ${moveButtons}
+        <button class="icon-btn icon-btn-green" onclick="completeTask(${realIdx})" title="完了">✓</button>
+        <button class="icon-btn icon-btn-gray" onclick="deleteTask(${realIdx})" title="削除">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderDone() {
+  const list = document.getElementById('done-list');
+  const done = tasks.filter(t => t.completed);
+  if (!done.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div>完了済みのタスクはないよ</div>';
+    return;
+  }
+  list.innerHTML = done.map(task => {
+    const realIdx = tasks.indexOf(task);
+    return `<div class="task-item completed">
+      <div style="flex:1">
+        <div class="task-text">${escHtml(task.text)}</div>
+        ${task.completedDate ? `<div class="task-meta">✓ ${task.completedDate}</div>` : ''}
+      </div>
+      <div class="task-actions">
+        <button class="icon-btn icon-btn-blue" onclick="uncompleteTask(${realIdx})" title="戻す">↩</button>
+        <button class="icon-btn icon-btn-gray" onclick="deleteTask(${realIdx})" title="削除">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============ Daily Tasks ============
+function addDailyTask() {
+  const inp = document.getElementById('daily-input');
+  const text = inp.value.trim();
+  if (!text) { showToast('⚠️ タスクを入力してね'); return; }
+  dailyTasks.push({ text, completed: false });
+  inp.value = '';
+  save();
+  renderDaily();
+  showToast('✅ 追加したよ！');
+}
+
+function completeDailyTask(idx) {
+  dailyTasks[idx].completed = true;
+  const today = todayStr();
+  if (!dailyHistory[today]) dailyHistory[today] = [];
+  if (!dailyHistory[today].includes(dailyTasks[idx].text)) {
+    dailyHistory[today].push(dailyTasks[idx].text);
+  }
+  save();
+  renderDaily();
+  showToast('🎉 完了！');
+}
+
+function uncompleteDailyTask(idx) {
+  const text = dailyTasks[idx].text;
+  dailyTasks[idx].completed = false;
+  const today = todayStr();
+  if (dailyHistory[today]) {
+    dailyHistory[today] = dailyHistory[today].filter(t => t !== text);
+  }
+  save();
+  renderDaily();
+}
+
+function deleteDailyTask(idx) {
+  dailyTasks.splice(idx, 1);
+  save();
+  renderDaily();
+  showToast('🗑 削除したよ');
+}
+
+function resetDaily() {
+  showConfirm('毎日ToDoをリセットするよ！\n完了済みを全部未完了に戻す？', () => {
+    dailyTasks.forEach(t => t.completed = false);
+    save();
+    renderDaily();
+    showToast('🔄 リセットしたよ！');
+  });
+}
+
+function renderDaily() {
+  const activeList = document.getElementById('daily-active-list');
+  const doneList = document.getElementById('daily-done-list');
+  const doneTitleEl = document.getElementById('daily-done-title');
+
+  const active = dailyTasks.filter(t => !t.completed);
+  const done = dailyTasks.filter(t => t.completed);
+
+  if (!active.length && !done.length) {
+    activeList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔄</div>毎日やることを追加してみて！</div>';
+    doneList.innerHTML = '';
+    doneTitleEl.style.display = 'none';
+    return;
+  }
+
+  activeList.innerHTML = active.map(task => {
+    const idx = dailyTasks.indexOf(task);
+    return `<div class="task-item">
+      <div class="task-text">${escHtml(task.text)}</div>
+      <div class="task-actions">
+        <button class="icon-btn icon-btn-green" onclick="completeDailyTask(${idx})">✓</button>
+        <button class="icon-btn icon-btn-gray" onclick="deleteDailyTask(${idx})">🗑</button>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty-state" style="padding:16px"><div style="font-size:24px">🎊</div>全部完了！すごい！</div>';
+
+  if (done.length) {
+    doneTitleEl.style.display = 'block';
+    doneList.innerHTML = done.map(task => {
+      const idx = dailyTasks.indexOf(task);
+      return `<div class="task-item completed">
+        <div class="task-text">${escHtml(task.text)}</div>
+        <div class="task-actions">
+          <button class="icon-btn icon-btn-blue" onclick="uncompleteDailyTask(${idx})">↩</button>
+          <button class="icon-btn icon-btn-gray" onclick="deleteDailyTask(${idx})">🗑</button>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    doneTitleEl.style.display = 'none';
+    doneList.innerHTML = '';
+  }
+}
+
+// ============ Memos ============
+function addMemo() {
+  const inp = document.getElementById('memo-input');
+  const text = inp.value.trim();
+  if (!text) { showToast('⚠️ メモを入力してね'); return; }
+  const now = new Date();
+  memos.unshift({
+    text,
+    date: formatDateJP(now),
+    time: formatTime(now)
+  });
+  inp.value = '';
+  save();
+  renderMemos();
+  showToast('📝 記録したよ！');
+}
+
+function deleteMemo(idx) {
+  memos.splice(idx, 1);
+  save();
+  renderMemos();
+  showToast('🗑 削除したよ');
+}
+
+function renderMemos() {
+  const list = document.getElementById('memo-list');
+  if (!memos.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📓</div>メモがないよ！<br>思いついたことを書き留めよう</div>';
+    return;
+  }
+  list.innerHTML = memos.map((memo, i) => `
+    <div class="memo-item">
+      <div class="memo-date">${memo.date} ${memo.time}</div>
+      <div class="memo-body">
+        <div class="memo-text">${escHtml(memo.text)}</div>
+        <button class="icon-btn icon-btn-gray" onclick="deleteMemo(${i})" title="削除">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============ Calendar ============
+let calYear, calMonth, selectedDate = null;
+
+function renderCalendar() {
+  const now = new Date();
+  if (calYear === undefined) { calYear = now.getFullYear(); calMonth = now.getMonth(); }
+  
+  document.getElementById('cal-title').textContent = `${calYear}年 ${calMonth + 1}月`;
+  
+  const grid = document.getElementById('cal-grid');
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+  
+  const todayKey = todayStr();
+  let html = '';
+  
+  // Prev month days
+  for (let i = firstDay - 1; i >= 0; i--) {
+    html += `<div class="cal-day other-month">${daysInPrev - i}</div>`;
+  }
+  
+  // Current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = dateStr === todayKey;
+    const hasTasks = dailyHistory[dateStr] && dailyHistory[dateStr].length > 0;
+    const isSelected = dateStr === selectedDate;
+    const dow = new Date(calYear, calMonth, d).getDay();
+    
+    let cls = 'cal-day';
+    if (isToday && !hasTasks) cls += ' today';
+    if (hasTasks) cls += ' has-tasks';
+    if (isToday && hasTasks) cls += ' today';
+    if (isSelected) cls += ' selected';
+    if (dow === 0 && !hasTasks) cls += ' sunday';
+    if (dow === 6 && !hasTasks) cls += ' saturday';
+    
+    html += `<div class="${cls}" onclick="selectDate('${dateStr}')">${d}</div>`;
+  }
+  
+  // Next month filler
+  const total = firstDay + daysInMonth;
+  const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for (let d = 1; d <= remaining; d++) {
+    html += `<div class="cal-day other-month">${d}</div>`;
+  }
+  
+  grid.innerHTML = html;
+  
+  if (selectedDate) showCalDetail(selectedDate);
+}
+
+function selectDate(dateStr) {
+  selectedDate = dateStr;
+  renderCalendar();
+  showCalDetail(dateStr);
+}
+
+function showCalDetail(dateStr) {
+  const el = document.getElementById('cal-detail');
+  const [y, m, d] = dateStr.split('-');
+  const label = `${y}年${parseInt(m)}月${parseInt(d)}日`;
+  
+  if (dailyHistory[dateStr] && dailyHistory[dateStr].length) {
+    const items = dailyHistory[dateStr].map(t =>
+      `<div class="cal-task-item"><div class="cal-task-dot"></div>${escHtml(t)}</div>`
+    ).join('');
+    el.innerHTML = `<div class="cal-detail-title">📅 ${label} の完了タスク（${dailyHistory[dateStr].length}個）</div>${items}`;
+  } else {
+    el.innerHTML = `<div class="cal-detail-title">📅 ${label}</div><div style="color:var(--text-light);font-size:13px">この日に完了したタスクはないよ</div>`;
+  }
+}
+
+function calPrev() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+function calNext() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+// ============ Confirm Dialog ============
+function showConfirm(msg, onOk) {
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.innerHTML = `<div class="confirm-box">
+    <p>${msg.replace(/\n/g,'<br>')}</p>
+    <div class="confirm-btns">
+      <button class="btn btn-gray" id="conf-cancel">キャンセル</button>
+      <button class="btn btn-green" id="conf-ok">OK</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('conf-cancel').onclick = () => overlay.remove();
+  document.getElementById('conf-ok').onclick = () => { overlay.remove(); onOk(); };
+}
+
+// ============ Utilities ============
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function todayStr() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+}
+
+function formatDateJP(d) {
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+}
+
+function formatTime(d) {
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+// ============ Enter key bindings ============
+document.getElementById('task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+document.getElementById('daily-input').addEventListener('keydown', e => { if (e.key === 'Enter') addDailyTask(); });
+document.getElementById('memo-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.ctrlKey) addMemo();
+});
+
+// ============ Init ============
+load();
+renderActive();
+</script>
+</body>
+</html>
