@@ -546,15 +546,6 @@
     <button class="tab-btn" onclick="switchTab('calendar')">📅 カレンダー</button>
   </div>
 
-  <!-- ===== エクスポート/インポートバー ===== -->
-  <div style="display:flex; gap:8px; margin:12px 14px 0;">
-    <button class="btn btn-blue" style="flex:1; font-size:12px" onclick="exportData()">📤 エクスポート</button>
-    <label class="btn btn-pink" style="flex:1; font-size:12px; text-align:center; cursor:pointer; margin:0; display:flex; align-items:center; justify-content:center;">
-      📥 インポート
-      <input type="file" accept=".json" onchange="importData(event)" style="display:none">
-    </label>
-  </div>
-
   <!-- ===== 未完了タブ ===== -->
   <div class="tab-content active" id="tab-todo">
     <div class="input-area">
@@ -632,6 +623,13 @@
       <div class="cal-detail" id="cal-detail">
         <div style="color:var(--text-light); font-size:13px">📌 日付をタップすると完了タスクを確認できます</div>
       </div>
+    </div>
+    <div style="display:flex; gap:8px; margin:0 14px 14px;">
+      <button class="btn btn-blue" style="flex:1; font-size:12px" onclick="exportData()">📤 エクスポート</button>
+      <label class="btn btn-pink" style="flex:1; font-size:12px; text-align:center; cursor:pointer; margin:0; display:flex; align-items:center; justify-content:center;">
+        📥 インポート
+        <input type="file" accept=".json" onchange="importData(event)" style="display:none">
+      </label>
     </div>
     <div class="bottom-spacer"></div>
   </div>
