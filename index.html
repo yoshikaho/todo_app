@@ -229,7 +229,26 @@
   .icon-btn-gray { background: #eee; color: var(--text-light); }
   .icon-btn-pink { background: var(--accent-pink); color: white; }
 
-  /* Edit mode controls */
+  /* Priority buttons */
+  .priority-btn {
+    flex: 1;
+    padding: 7px 0;
+    border: 2px solid var(--border, #e0d8f0);
+    border-radius: 50px;
+    background: none;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .priority-btn:active { transform: scale(0.95); }
+  .priority-btn.active#pri-high { background: #FFE4E4; border-color: #FFB3B3; color: #E05555; }
+  .priority-btn.active#pri-mid  { background: #FFF8E0; border-color: #FFD966; color: #B8860B; }
+  .priority-btn.active#pri-low  { background: #E4F8ED; border-color: #88D8A8; color: #3A9B60; }
+
+
   .edit-controls {
     margin: 0 14px;
     display: flex;
@@ -553,6 +572,11 @@
         <input class="task-input" id="task-input" type="text" placeholder="タスクを入力..." maxlength="100">
         <button class="btn btn-pink" onclick="addTask()">追加 ➕</button>
       </div>
+      <div style="display:flex; gap:6px; margin-top:10px;">
+        <button class="priority-btn active" id="pri-high" onclick="selectPriority('high')">🔴 高</button>
+        <button class="priority-btn" id="pri-mid" onclick="selectPriority('mid')">🟡 中</button>
+        <button class="priority-btn" id="pri-low" onclick="selectPriority('low')">🟢 低</button>
+      </div>
     </div>
     <div class="edit-controls">
       <button class="btn btn-blue" id="edit-btn" onclick="toggleEdit()">編集 ✏️</button>
@@ -649,7 +673,8 @@ let editMode = false;
 function save() {
   try {
     localStorage.setItem('todo_app_data', JSON.stringify({
-      tasks, memos, dailyTasks, dailyHistory
+      tasks, memos, dailyTasks, dailyHistory,
+      lastOpened: todayStr()
     }));
   } catch(e) { console.warn('Save failed', e); }
 }
@@ -663,6 +688,12 @@ function load() {
     memos = d.memos || [];
     dailyTasks = d.dailyTasks || [];
     dailyHistory = d.dailyHistory || {};
+
+    // 自動リセット：前回起動が昨日以前なら毎日ToDoを全部未完了に戻す
+    if (d.lastOpened && d.lastOpened !== todayStr()) {
+      dailyTasks.forEach(t => t.completed = false);
+      save(); // リセット済みの状態で上書き保存
+    }
   } catch(e) {
     tasks = []; memos = []; dailyTasks = []; dailyHistory = {};
   }
@@ -693,15 +724,52 @@ function showToast(msg) {
 }
 
 // ============ Tasks ============
+let selectedPriority = 'high';
+
+function selectPriority(p) {
+  selectedPriority = p;
+  ['high','mid','low'].forEach(id => {
+    document.getElementById('pri-' + id).classList.toggle('active', id === p);
+  });
+}
+
+const BORDER_COLORS = ['#ADD8E6', '#FFB6C1', '#B4E7CE', '#C4B0E0'];
+
 function addTask() {
   const inp = document.getElementById('task-input');
   const text = inp.value.trim();
   if (!text) { showToast('⚠️ タスクを入力してね'); return; }
-  tasks.push({ text, completed: false, completedDate: null });
+
+  const active = tasks.filter(t => !t.completed);
+
+  let insertIdx; // tasksリスト全体での挿入位置
+  if (selectedPriority === 'high') {
+    // 未完了の先頭に挿入
+    const firstActive = tasks.findIndex(t => !t.completed);
+    insertIdx = firstActive === -1 ? tasks.length : firstActive;
+  } else if (selectedPriority === 'low') {
+    // 未完了の末尾（完了済みの直前）に挿入
+    let lastActive = -1;
+    tasks.forEach((t, i) => { if (!t.completed) lastActive = i; });
+    insertIdx = lastActive === -1 ? tasks.length : lastActive + 1;
+  } else {
+    // 中：未完了グループの真ん中に挿入
+    const activeIndices = tasks.map((t,i) => t.completed ? -1 : i).filter(i => i >= 0);
+    if (activeIndices.length === 0) {
+      insertIdx = tasks.findIndex(t => t.completed);
+      if (insertIdx === -1) insertIdx = tasks.length;
+    } else {
+      const midPos = Math.floor(activeIndices.length / 2);
+      insertIdx = activeIndices[midPos];
+    }
+  }
+
+  tasks.splice(insertIdx, 0, { text, completed: false, completedDate: null, priority: selectedPriority });
   inp.value = '';
   save();
   renderActive();
-  showToast('✅ 追加したよ！');
+  const labels = { high:'🔴 高優先度', mid:'🟡 中優先度', low:'🟢 低優先度' };
+  showToast(`${labels[selectedPriority]}で追加したよ！`);
 }
 
 function completeTask(idx) {
@@ -762,11 +830,12 @@ function renderActive() {
   }
   list.innerHTML = active.map((task, i) => {
     const realIdx = tasks.indexOf(task);
+    const borderColor = BORDER_COLORS[Math.floor(i / 4) % BORDER_COLORS.length];
     const moveButtons = editMode ? `
       <button class="icon-btn icon-btn-blue" onclick="moveTask(${i}, -1)" title="上へ">▲</button>
       <button class="icon-btn icon-btn-blue" onclick="moveTask(${i}, 1)" title="下へ">▼</button>
     ` : '';
-    return `<div class="task-item" id="task-${realIdx}">
+    return `<div class="task-item" id="task-${realIdx}" style="border-left-color:${borderColor}">
       <div class="task-text">${escHtml(task.text)}</div>
       <div class="task-actions">
         ${moveButtons}
